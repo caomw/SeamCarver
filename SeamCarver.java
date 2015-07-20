@@ -4,8 +4,8 @@ import java.util.Set;
 
 public class SeamCarver {
 	
-	Picture img;
-	Double[][] energyMatrix;
+	final private Picture img;
+	private final Double[][] energyMatrix;
 	
 	public SeamCarver(Picture picture){
 	   // create a seam carver object based on the given picture
@@ -15,6 +15,10 @@ public class SeamCarver {
 	   Picture img = copyPic(imgTemp);
 	   this.img = img;
 	   imgTemp = null;
+	   
+	   //compute energies
+	   this.energyMatrix = fillEnergyMatrix();
+
    }
    public Picture picture(){
 	   // current picture
@@ -35,16 +39,6 @@ public class SeamCarver {
 	   int row = y;
 	
 	   return deltaX(row,col) + deltaY(row,col);
-   }
-   //squared difference between two pixels in Y direction
-   private double deltaY1(int col, int row1, int row2){
-	   Color a = img.get(col, row1);
-	   Color b = img.get(col, row2);
-	   double deltaR = Math.pow((a.getRed()   - b.getRed()),  2);
-	   double deltaG = Math.pow((a.getGreen() - b.getGreen()),2);
-	   double deltaB = Math.pow((a.getBlue()  - b.getBlue()), 2);
-	   
-	   return deltaR + deltaG + deltaB;   
    }
    //squared difference between two pixels in Y direction
    private double deltaY(int row, int col){
@@ -85,97 +79,18 @@ public class SeamCarver {
 	   return deltaR + deltaG + deltaB;   
    }
    
-   public Set<gridLocate> locate(int x, int y){
-	   int col = x;
-	   int row = y;
-	   
-	   Set<gridLocate> where = new HashSet<gridLocate>();
-	   
-	   //check left wall
-	   if(col == 0){
-		   where.add(gridLocate.left);
-		   if(row == 0){
-			   //top left
-			   where.add(gridLocate.top);
-			   System.out.println("Top Left");
-			   return where;
-		   }
-		   else if(row == (img.height()-1)){
-			   //bottom left
-			   where.add(gridLocate.bottom);
-			   System.out.println("Bottom Left");
-			   return where;
-		   }
-		   else{
-			   //left wall
-			   System.out.println("Left Wall");
-			   return where;
-		   }
-	   }
-		   
-		 //check right wall
-		if(col == (img.width()-1)){
-			 where.add(gridLocate.right);
-			if(row == 0){
-   	        //top right
-		    where.add(gridLocate.top);
-			System.out.println("Top Right");
-			return where;
-			}
-			else if(row == (img.height()-1)){
-		    //bottom right
-			where.add(gridLocate.bottom);
-		    System.out.println("Bottom Right");
-		    return where;
-			}
-			else{
-		     //right wall
-		    System.out.println("Right Wall");
-		    return where;
-			} 
-		}
-			   
-		//check top wall
-	    if(row == 0){
-	    	//top middle
-	    	where.add(gridLocate.top);
-	    	System.out.println("Top Middle");
-	    	return where;
-	    }
-	    
-	    //check bottom wall
-	    if(row == (img.height()-1)){
-	    	//bottom middle
-	    	where.add(gridLocate.bottom);
-	    	System.out.println("Bottom Middle");
-	    	return where;
-	    }
-	    
-	    else{
-	    	//in middle
-	    	System.out.println("Middle");
-	    	return where;
-	    }
-	    
-
-	   
-	   
-   }
-   
-   private enum gridLocate{
-	   top, bottom, left, right;
-   }
-   private void fillEnergyMatrix(){
+   private Double[][] fillEnergyMatrix(){
 	   //energyMatrix: [ row 0;  <-- row is length Width-1
 	   //  				 row 1;
 	   //				 row Height-1;
-	   energyMatrix = new Double[img.height()][img.width()];
 	   
+	   Double[][] matrix = new Double[img.height()][img.width()];
 	   for(int row = 0; row<img.height(); row++){
 		   for (int col = 0; col<img.width(); col++){
-			   //energyMatrix[row][col] = this.energy(col,row);
+			   matrix[row][col] = energy(col,row);
 		   }
 	   }
+	   return matrix;
 	   
    }
 //   public   int[] findHorizontalSeam()               // sequence of indices for horizontal seam
@@ -184,7 +99,6 @@ public class SeamCarver {
 //   public    void removeVerticalSeam(int[] seam)     // remove vertical seam from current picture
    private Picture copyPic(Picture a){
 	   Picture img = new Picture(a.width(), a.height());
-	   
 	   //make defensive copy
 	   for(int i = 0; i<a.width(); i++){
 		   for(int j = 0; j<a.height(); j++){
@@ -193,27 +107,42 @@ public class SeamCarver {
 	   }
 	   return img;
    }
+   
    public static void main(String args[]){
 	   String[] filename = {"3x4.png"};
 	   SeamCarver a = new SeamCarver(new Picture(filename[0]));
 	   System.out.println("3x4.png: width (3) = " + a.width() + "hieght (4) = " + a.height());
-	   //PrintEnergy.main(filename);
+	   PrintEnergy.main(filename);
 	   
 	   // [  (255,101,51) , (255,101,153) , (255,101,255);
 	   //     ...
 	   //     ...						  , (255,255,255)];
 	   
-	   // deltaX
+// test deltaX deltaY	   
 	   	//top left
-	   System.out.print("Top Left, Should be 10404: " (10404 == a.deltaX(0, col1, col2)) );
+	// deltaX
+	   	System.out.println("DX Top Left, Should be 10404: " + (10404 == a.deltaX(0,0)));
+	// deltaY
+	   	System.out.println("DY Top Left, Should be 10404: " + (10404 == a.deltaY(0,0)));
+	// Energy
+	   	System.out.println("EN Top Left, Should be 10404: " + (20808 == a.energy(0,0)));
 	   	//top right
+	   	System.out.println("DX Top Right, Should be 10404: " + (10404 == a.deltaX(0,a.width()-1)));
+	   	System.out.println("DY Top Right, Should be 10404: " + (10404 == a.deltaY(0,a.width()-1)));
+	   	System.out.println("EN Top Right, Should be 20808: " + (20808 == a.energy(a.width()-1,0)));
 	   	//bottom left
+	   	System.out.println("DX Bottom Left, Should be 10404: " + (10404 == a.deltaX(a.height()-1,0)));
+	   	System.out.println("DY Bottom Left, Should be 10404: " + (10404 == a.deltaY(a.height()-1,0)));
+	   	System.out.println("EN Bottom Left, Should be 20808: " + (20808 == a.energy(0,a.height()-1)));
 	   	//bottom right
-	   	//middle
-	   	// deltaY
-	   int row = 0;
-	   int col = 0;
-	   System.out.print("[" + row + ", "+ col + "]: Should be: Top Left =?  " );a.energy(row, col);
+	   	System.out.println("DX Bottom Right, Should be 10404: " + (10404 == a.deltaX(a.height()-1,a.width()-1)));
+	   	System.out.println("DY Bottom Right, Should be 10404: " + (10816 == a.deltaY(a.height()-1,a.width()-1)));
+	   	System.out.println("EN Bottom Right, Should be 21220: " + (21220 == a.energy(a.width()-1,a.height()-1)));
+	   	//middle	
+	   	System.out.println("DX Middle, Should be 10404: " + (41616 == a.deltaX(1,1)));
+	   	System.out.println("DY Middle, Should be 10404: " + (10609 == a.deltaY(1,1)));
+	   	System.out.println("EN Middle, Should be 52225: " + (52225 == a.energy(1,1)));
+
 	   
 	   
    }
