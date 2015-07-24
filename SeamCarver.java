@@ -2,7 +2,6 @@ import java.util.Arrays;
 import java.util.LinkedList;
 
 public class SeamCarver {
-	
 	private Picture img;
 	
 	public SeamCarver(Picture picture){
@@ -17,7 +16,8 @@ public class SeamCarver {
    }
    public Picture picture(){
 	   // current picture
-	   // make defensive copy and return 
+	   // make defensive copy and return.
+	   
 	   return SChelper.copyPic(img);
    }
    public int width() {
@@ -95,6 +95,13 @@ public class SeamCarver {
    public void removeHorizontalSeam(Integer[] seam){
 	// remove horizontal seam from current picture
 	  //leverage vertical's remove seam method by transposing
+	   if ((img.width()==1) || (img.height()==1))			 throw new IllegalArgumentException("Picture Height/Width cannot be 1");
+	   if(seam == null)                                      throw new NullPointerException("Seam to be removed cannot be null");
+	   if(seam.length != img.width())                        throw new IllegalArgumentException("Horizontal Seam length does not equal the width of the image");
+	   try {SChelper.isValidSeamException(seam, this.img);}
+	   	catch (IllegalArgumentException e){                  throw new IllegalArgumentException("Invalid Seam: " + e.getMessage());}
+	   
+	   
 	   this.img = SChelper.transpose(this.img);
 	   this.img = removeVerticalSeam(seam,this.img);
 	   
@@ -103,7 +110,11 @@ public class SeamCarver {
    }
    public void removeVerticalSeam(Integer [] seam){
 	  // remove vertical seam from current picture
-	   	this.img = removeVerticalSeam(seam,this.img);
+	   if(seam == null) throw new NullPointerException("Seam to be removed cannot be null");
+	   if(seam.length != img.height()) throw new IllegalArgumentException("Vertical Seam length does not equal the height of the image");
+	   try {SChelper.isValidSeamException(seam, this.img);}
+	   	catch (IllegalArgumentException e){throw new IllegalArgumentException("Invalid Seam: " + e.getMessage());}
+	   this.img = removeVerticalSeam(seam,this.img);
    }
    
    private Picture removeVerticalSeam(Integer[] seam, Picture old){
@@ -217,7 +228,31 @@ public class SeamCarver {
 	   String[] filename1 = {"6x5.png"};
 	   SeamCarver f = new SeamCarver(new Picture(filename1[0]));
 	   //PrintEnergy.main(filename1);
+	 //test validSeam
+	        System.out.println("Test isValidSeam");
+	        System.out.println("  Test ValidSeams");
+	        Integer[] validVSeam = {SChelper.sub2ind(0,0,3), SChelper.sub2ind(1,0,3), SChelper.sub2ind(2,0,3), SChelper.sub2ind(3,0,3)};
+	 	    Integer[] validHSeam = {SChelper.sub2ind(0,0,3), SChelper.sub2ind(0,1,3), SChelper.sub2ind(0,2,3)};
+	 	    System.out.println("    Vertical: " + SChelper.isValidSeam(validVSeam, a.picture()));
+	 	    System.out.println("    Horizontal: " + SChelper.isValidSeam(validHSeam, a.picture()));
+	 	    Integer[] validVSeam1 = {SChelper.sub2ind(0,3,6), SChelper.sub2ind(1,4,6), SChelper.sub2ind(2,3,6), SChelper.sub2ind(3,2,6), SChelper.sub2ind(4,2,6)};
+	 		Integer[] validHSeam1 = {SChelper.sub2ind(2,0,6), SChelper.sub2ind(2,1,6), SChelper.sub2ind(1,2,6), SChelper.sub2ind(2,3,6), SChelper.sub2ind(1,4,6), SChelper.sub2ind(2,5,6)};
+	 		System.out.println("    Vertical: " + SChelper.isValidSeam(validVSeam1, f.picture()));
+	 	    System.out.println("    Horizontal: " + SChelper.isValidSeam(validHSeam1, f.picture()));
+	 	    System.out.println("  Test inValidSeams");
+	 	    Integer[] invalidVSeam = {SChelper.sub2ind(0,2,3), SChelper.sub2ind(1,0,3), SChelper.sub2ind(2,0,3), SChelper.sub2ind(3,0,3)};
+	 	    Integer[] invalidVSeam2 = {SChelper.sub2ind(0,2,3), SChelper.sub2ind(0,2,3), SChelper.sub2ind(2,0,3), SChelper.sub2ind(3,0,3)};
+	 	    Integer[] invalidHSeam = {SChelper.sub2ind(3,0,3), SChelper.sub2ind(0,1,3), SChelper.sub2ind(0,2,3)};
+	 	    Integer[] invalidVSeam1 = {SChelper.sub2ind(0,3,6), SChelper.sub2ind(1,4,6), SChelper.sub2ind(2,1,6), SChelper.sub2ind(3,2,6), SChelper.sub2ind(4,2,6)};
+	 		Integer[] invalidHSeam1 = {SChelper.sub2ind(2,0,6), SChelper.sub2ind(2,1,6), SChelper.sub2ind(1,2,6), SChelper.sub2ind(3,3,6), SChelper.sub2ind(1,4,6), SChelper.sub2ind(2,5,6)};
+	 		SChelper.isValidSeam(invalidVSeam, a.picture());
+	 		System.out.println("    Vertical, Seq. cols not adj:     " + !SChelper.isValidSeam(invalidVSeam, a.picture()));
+	 		System.out.println("    Vertical, Seq. pixels are same:  " + !SChelper.isValidSeam(invalidVSeam2, a.picture()));
+		 	System.out.println("    Horizontal Seq. rows not adj:    " + !SChelper.isValidSeam(invalidHSeam, a.picture()));
+		 	System.out.println("    Vertical, Seq. cols not adj:     " + !SChelper.isValidSeam(invalidVSeam1, f.picture()));
+		 	System.out.println("    Horizontal, Seq. rows not adj:   " + !SChelper.isValidSeam(invalidHSeam1, f.picture()));    
 
+	 		
 	 //test findVerticalSeam
 	 		System.out.println("Test findVerticalSeam 6x5");
 	 		//PrintSeams.main(new String[] {"6x5.png"});
